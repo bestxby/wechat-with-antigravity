@@ -1,0 +1,43 @@
+{
+  "name": "wechat-antigravity-bridge",
+  "version": "1.0.0",
+  "description": "Chat with Antigravity IDE from WeChat - a bridge connecting personal WeChat to Antigravity Agent",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build",
+    "start": "node dist/main.js",
+    "run": "node dist/main.js start",
+    "dev": "tsc --watch",
+    "test": "node --test dist/tests/*.test.js",
+    "setup": "node dist/main.js setup",
+    "wait": "node dist/agent-loop/wait-message.js",
+    "reply": "node dist/agent-loop/send-message.js",
+    "awake": "powershell -ExecutionPolicy Bypass -File scripts/keep-awake.ps1"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/qrcode-terminal": "^0.12.0",
+    "@types/vscode": "^1.120.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "wechat",
+    "claude-code",
+    "claude",
+    "bridge",
+    "chat",
+    "skill"
+  ],
+  "author": "Wechat-ggGitHub",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wechat-ggGitHub/wechat-claude-code.git"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+.env
+.wechat-claude-code/
+.claude/
+CLAUDE.md
+
+# Local runtime artifacts
+.typing.pid
+wechat-response.txt
+.listener.lock
+.data/
+
+# Internal agent thought processes & specs
+docs/superpowers/
