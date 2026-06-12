@@ -11,10 +11,10 @@ async function main() {
     process.exit(1);
   }
 
-  const [,, fromUserId, contextToken, filePath] = process.argv;
+  const [,, fromUserId, contextToken, filePath, typeFlag] = process.argv;
 
   if (!fromUserId || !filePath) {
-    console.error('Usage: node send-message.js <fromUserId> <contextToken> <pathToTextFile>');
+    console.error('Usage: node send-message.js <fromUserId> <contextToken> <pathToTextFile> [--file]');
     process.exit(1);
   }
 
@@ -33,13 +33,16 @@ async function main() {
     try { fs.unlinkSync(pidFile); } catch (e) {}
   }
 
-  const text = fs.readFileSync(filePath, 'utf-8');
+  const cToken = contextToken === 'null' ? '' : contextToken;
 
-  // If text is too long, we might need to split it (sender usually handles it or we can just send as is)
-  // `sender.sendText` should handle basic sending. Let's rely on it.
-  
-  await sender.sendText(fromUserId, contextToken === 'null' ? '' : contextToken, text);
-  console.log('Message sent successfully!');
+  if (typeFlag === '--file') {
+    await sender.sendFile(fromUserId, cToken, filePath);
+    console.log('File sent successfully!');
+  } else {
+    const text = fs.readFileSync(filePath, 'utf-8');
+    await sender.sendText(fromUserId, cToken, text);
+    console.log('Message sent successfully!');
+  }
 }
 
 main().catch(err => {
