@@ -39,18 +39,34 @@ First, install dependencies and run the setup script in the project directory.
 npm install
 npm run setup
 ```
-A QR code will pop up on your screen. Scan it with WeChat. Upon success, your credentials will be stored locally in the `.data` directory.
+A QR code will pop up on your screen. Scan it with WeChat. Upon success, your credentials will be stored locally in the `~/.wechat-claude-code` directory.
 
 ### Step 2: Launch the Service (Choose one)
 
-**Option A: Pure Terminal Native Launch**
+**Option A: Automatic Management via VS Code Extension (Highly Recommended)**
+
+By installing the local VS Code extension, you can visually toggle the WeChat bridge directly from the IDE sidebar, and enjoy fully automated background message polling and agent wake-ups.
+
+1. **Compile the extension**:
+   Ensure you have run `npm install` so the `dist` directory is generated.
+2. **Install to local VS Code**:
+   * **Windows**: Copy or symlink the project folder to `C:\Users\<username>\.vscode\extensions\wechat-with-antigravity`
+   * **macOS / Linux**: Copy or symlink the project folder to `~/.vscode/extensions/wechat-with-antigravity`
+   * **Restart VS Code** to automatically activate the extension.
+3. **Visual Configuration & Run**:
+   * Click the **WeChat Agent** icon in the VS Code Activity Bar (left panel).
+   * If logged in, the sidebar displays your profile, online status, and Daemon state. If not logged in, scan the QR code displayed directly in the sidebar to bind.
+   * Click the **Start** button to run the daemon; the indicator dot will turn green (Running).
+   * When a WeChat message is received, the extension captures it, focuses the Antigravity agent panel, feeds the prompt, executes the task, and sends the response back to WeChat automatically!
+
+**Option B: Pure Terminal Native Launch**
 You can start the listener in any workspace you want the agent to control by directly executing:
 ```bash
 # Ensure you are in your target project workspace and pass the absolute path to the script
 node /path/to/wechat-with-antigravity/dist/agent-loop/wait-message.js
 ```
 
-**Option B: Elegant AI Skill Integration (Highly Recommended)**
+**Option C: Elegant AI Skill Integration**
 If your Agent platform (like Claude Code or advanced IDEs) supports the standard `SKILL.md` skill extension mechanism, we strongly recommend integrating it as a global Skill:
 1. Locate the `SKILL.md` file in the root of this project.
 2. Place it into your Agent platform's prescribed skills directory (e.g., `~/.claude/skills/wechat-listener/` or your IDE's plugin folder).

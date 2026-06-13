@@ -1,7 +1,43 @@
 {
   "name": "wechat-antigravity-bridge",
-  "version": "1.0.0",
+  "publisher": "bestxby",
+  "version": "2.0.0",
   "description": "A powerful bridge connecting personal WeChat to Antigravity Agent, transforming WeChat into a full-duplex root terminal for your IDE.",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onView:wechat-antigravity.sidebar",
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "wechat-antigravity",
+          "title": "WeChat Agent",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "wechat-antigravity": [
+        {
+          "type": "webview",
+          "id": "wechat-antigravity.sidebar",
+          "name": "Connection Status",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "wechat-antigravity.startDaemon",
+        "title": "WeChat: Start Daemon"
+      }
+    ]
+  },
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -23,7 +59,7 @@
     "@types/node": "^22.0.0",
     "@types/qrcode": "^1.5.6",
     "@types/qrcode-terminal": "^0.12.0",
-    "@types/vscode": "^1.120.0",
+    "@types/vscode": "^1.80.0",
     "typescript": "^5.7.0"
   },
   "keywords": [

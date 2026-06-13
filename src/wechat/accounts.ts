@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, statSync, unlinkSync, existsSync } from 'node:fs';
 import { loadJson, saveJson, validateAccountId } from '../store.js';
 import { logger } from '../logger.js';
 
@@ -60,5 +60,18 @@ export function loadLatestAccount(): AccountData | null {
   } catch {
     // Directory does not exist or is unreadable
     return null;
+  }
+}
+
+/** Delete account credentials by ID. */
+export function deleteAccount(accountId: string): void {
+  const filePath = accountPath(accountId);
+  try {
+    if (existsSync(filePath)) {
+      unlinkSync(filePath);
+      logger.info('Account deleted', { accountId });
+    }
+  } catch (err: any) {
+    logger.error('Failed to delete account', { accountId, error: err.message });
   }
 }

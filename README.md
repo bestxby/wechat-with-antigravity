@@ -39,18 +39,34 @@
 npm install
 npm run setup
 ```
-屏幕上会弹出二维码，请使用微信扫码。扫码成功后，状态和登录凭证将被保存在本地 `.data` 目录中。
+屏幕上会弹出二维码，请使用微信扫码。扫码成功后，状态和登录凭证将被保存在本地的 `~/.wechat-claude-code` 目录中。
 
-### 第二步：启动服务 (两种方式任选)
+### 第二步：启动服务 (三种方式任选)
 
-**方式 A：纯终端命令行启动**
+**方式 A：通过 VS Code 插件自动管理 (强烈推荐)**
+
+通过安装本地 VS Code 插件，您可以直接在 IDE 侧边栏中可视化地开启/关闭微信桥接，并享受完全自动化的后台消息接收与智能体唤醒。
+
+1. **编译插件**：
+   确保运行过 `npm install` 且成功生成 `dist` 目录。
+2. **安装到本地 VS Code**：
+   * **Windows**: 将整个项目文件夹复制或建立软链接到 `C:\Users\<您的用户名>\.vscode\extensions\wechat-with-antigravity`
+   * **macOS / Linux**: 复制或建立软链接到 `~/.vscode/extensions/wechat-with-antigravity`
+   * **重启 VS Code**，插件即会自动激活。
+3. **可视化配置与运行**：
+   * 启动 VS Code 后，点击左侧活动栏 (Activity Bar) 中的 **WeChat Agent** 微信小图标。
+   * 如果先前已登录，侧边栏会显示您的头像、在线状态以及守护进程（Daemon）状态。如果未登录，可直接在侧边栏中进行扫码绑定。
+   * 点击 **Start** 按钮开启守护进程，此时状态灯将变为绿色（Running）。
+   * 当您在微信端给智能体发送指令时，插件会全自动捕获消息并唤醒 IDE 侧边栏的 Antigravity 智能体面板开始处理，处理完成后自动回传，无需手动执行任何命令！
+
+**方式 B：纯终端命令行启动**
 您可以在需要被智能体接管的任意工作区目录下，直接执行以下命令开启监听：
 ```bash
 # 请确保此时的环境是在目标代码仓库下，且传入本项目所在的绝对路径运行
 node /path/to/wechat-with-antigravity/dist/agent-loop/wait-message.js
 ```
 
-**方式 B：通过 AI Skill 优雅集成 (强烈推荐)**
+**方式 C：通过 AI Skill 优雅集成**
 如果您的 Agent 工具（如 Claude Code、各类 IDE 等）支持标准的 `SKILL.md` 技能扩展机制，强烈建议您将其集成为一个全局 Skill：
 1. 找到本项目根目录下的 `SKILL.md` 文件。
 2. 将其放入您的 Agent 平台所规定的 Skills 目录中（例如 `~/.claude/skills/wechat-listener/` 或是您 IDE 的专属技能插件库中）。

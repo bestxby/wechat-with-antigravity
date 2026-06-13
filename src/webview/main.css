@@ -1,0 +1,630 @@
+:root {
+    /* Transitions & Colors */
+    --transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --wechat-green: #07C160;
+    --wechat-green-glow: rgba(7, 193, 96, 0.25);
+    --warning-amber: #f59e0b;
+    --error-red: #f43f5e;
+
+    /* Responsive Spacing & Sizing (Standard/Large Screen defaults) */
+    --container-padding: 10px 12px;
+    --container-gap: 12px;
+    --header-margin-bottom: 8px;
+    --header-title-size: 14px;
+    
+    --qr-container-padding: 12px 14px;
+    --qr-wrapper-size: 120px;
+    --qr-desc-size: 11px;
+    
+    --profile-padding: 8px 12px;
+    --avatar-size: 30px;
+    --avatar-font-size: 16px;
+    --user-name-size: 13px;
+    --status-text-size: 10px;
+    --disconnect-btn-size: 10px;
+    
+    --daemon-label-size: 11px;
+    --daemon-btn-padding: 4px 12px;
+    --daemon-btn-size: 10.5px;
+    
+    --panel-heading-size: 11px;
+    --panel-heading-margin: 6px 0 8px 0;
+    --guide-item-padding: 5px 8px;
+    --guide-item-gap: 8px;
+    --badge-size: 16px;
+    --badge-font-size: 9.5px;
+    --guide-text-size: 11px;
+}
+
+@media (max-height: 520px) {
+    :root {
+        --container-padding: 6px 8px;
+        --container-gap: 6px;
+        --header-margin-bottom: 2px;
+        --header-title-size: 12px;
+        
+        --qr-container-padding: 6px 8px;
+        --qr-wrapper-size: 90px;
+        --qr-desc-size: 9px;
+        
+        --profile-padding: 6px 10px;
+        --avatar-size: 24px;
+        --avatar-font-size: 13px;
+        --user-name-size: 11px;
+        --status-text-size: 8.5px;
+        --disconnect-btn-size: 9.5px;
+        
+        --daemon-label-size: 10px;
+        --daemon-btn-padding: 2px 10px;
+        --daemon-btn-size: 9.5px;
+        
+        --panel-heading-size: 9.5px;
+        --panel-heading-margin: 2px 0 3px 0;
+        --guide-item-padding: 3px 6px;
+        --guide-item-gap: 6px;
+        --badge-size: 13px;
+        --badge-font-size: 8px;
+        --guide-text-size: 9.5px;
+    }
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    font-size: var(--vscode-font-size, 12px);
+    color: var(--vscode-editor-foreground);
+    background-color: transparent;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    padding: var(--container-padding);
+    height: 100vh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow scrolling for extremely tiny screens */
+    gap: var(--container-gap);
+}
+
+/* Hide scrollbar when not active for maximum aesthetic premium feel, but allow scroll interaction */
+.container::-webkit-scrollbar {
+    width: 3px;
+}
+.container::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.2);
+    border-radius: 2px;
+}
+.container::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.4);
+}
+
+/* Header */
+.header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--header-margin-bottom);
+}
+
+.brand-badge-mini {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(7, 193, 96, 0.06);
+    border: 1px solid rgba(7, 193, 96, 0.15);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+}
+
+.pulse-ring {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--wechat-green);
+    box-shadow: 0 0 0 0 var(--wechat-green-glow);
+    animation: ring-pulse 2s infinite;
+}
+
+@keyframes ring-pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(7, 193, 96, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 4px rgba(7, 193, 96, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(7, 193, 96, 0);
+    }
+}
+
+.badge-text {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: var(--wechat-green);
+}
+
+.title {
+    font-size: var(--header-title-size);
+    font-weight: 700;
+    color: var(--vscode-editor-foreground);
+    margin: 0;
+    letter-spacing: 0.2px;
+}
+
+/* Views transition */
+.view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.view.hidden {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    position: absolute;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+}
+
+/* Premium Card Base */
+.card-glow {
+    position: relative;
+    background: var(--vscode-editorWidget-background);
+    border: 1px solid var(--vscode-widget-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Loading State Spinner */
+.spinner-container {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.double-spinner {
+    width: 100%;
+    height: 100%;
+    border: 2px solid transparent;
+    border-top-color: var(--wechat-green);
+    border-bottom-color: var(--wechat-green);
+    border-radius: 50%;
+    animation: double-spin 1.5s cubic-bezier(0.53, 0.21, 0.29, 0.67) infinite;
+}
+
+.spinner-core {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-left-color: var(--vscode-progressBar-background);
+    border-right-color: var(--vscode-progressBar-background);
+    border-radius: 50%;
+    animation: double-spin-reverse 1s linear infinite;
+}
+
+@keyframes double-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes double-spin-reverse {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+
+.status-text {
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground);
+    text-align: center;
+    line-height: 1.3;
+    margin: 2px 0;
+}
+
+/* QR Code Custom Container */
+.qr-container-compact {
+    max-width: 180px;
+    padding: var(--qr-container-padding);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.qr-wrapper-mini {
+    position: relative;
+    width: var(--qr-wrapper-size);
+    height: var(--qr-wrapper-size);
+    background: #ffffff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: all var(--transition-smooth);
+}
+
+#qr-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#qr-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.simple-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-top-color: var(--wechat-green);
+    border-radius: 50%;
+    animation: double-spin 0.8s linear infinite;
+}
+
+/* Scan Laser Animation overlay */
+.scan-laser {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: linear-gradient(90deg, rgba(7, 193, 96, 0.1), rgba(7, 193, 96, 0.8), rgba(7, 193, 96, 0.1));
+    animation: laser-scan 2.8s ease-in-out infinite;
+    box-shadow: 0 0 3px var(--wechat-green);
+}
+
+@keyframes laser-scan {
+    0%, 100% { top: 0%; }
+    50% { top: 98%; }
+}
+
+.status-desc-mini {
+    font-size: var(--qr-desc-size);
+    color: var(--vscode-descriptionForeground);
+    text-align: center;
+    margin: 6px 0 0 0;
+    line-height: 1.3;
+}
+
+/* Profile / Connected Card (Compact Style) */
+.profile-card-compact {
+    width: 100%;
+    padding: var(--profile-padding);
+    display: flex;
+    flex-direction: column;
+    transition: padding var(--transition-smooth);
+}
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.avatar-area-mini {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatar-mini {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(7, 193, 96, 0.1), rgba(7, 193, 96, 0.2));
+    border: 1.5px solid var(--wechat-green);
+    box-shadow: 0 0 8px var(--wechat-green-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--avatar-font-size);
+    z-index: 2;
+    transition: all var(--transition-smooth);
+}
+
+.status-dot-mini {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--wechat-green);
+    border: 1px solid var(--vscode-editorWidget-background);
+    z-index: 3;
+    box-shadow: 0 0 4px var(--wechat-green);
+}
+
+.user-info-mini {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.user-name-mini {
+    font-size: var(--user-name-size);
+    font-weight: 600;
+    color: var(--vscode-editor-foreground);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.connection-status-text {
+    font-size: var(--status-text-size);
+    font-weight: 500;
+    color: var(--wechat-green);
+}
+
+.disconnect-link-btn {
+    background: transparent;
+    border: none;
+    color: var(--vscode-descriptionForeground);
+    font-size: var(--disconnect-btn-size);
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 4px;
+    transition: color var(--transition-fast);
+    white-space: nowrap;
+}
+
+.disconnect-link-btn:hover {
+    color: var(--error-red);
+}
+
+.card-divider {
+    height: 1px;
+    background-color: var(--vscode-widget-border);
+    margin: 6px 0;
+    opacity: 0.5;
+    width: 100%;
+}
+
+/* Daemon status & toggle row */
+.daemon-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.daemon-info-mini {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.state-dot-wrapper-mini {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 8px;
+    height: 8px;
+}
+
+.daemon-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    z-index: 2;
+    transition: background-color var(--transition-fast);
+}
+
+.daemon-dot-halo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(1);
+    transition: all var(--transition-fast);
+}
+
+/* Daemon States */
+.daemon-dot.stopped {
+    background-color: var(--vscode-descriptionForeground);
+}
+
+.daemon-dot.running {
+    background-color: var(--wechat-green);
+    box-shadow: 0 0 4px var(--wechat-green);
+}
+
+.daemon-dot.running + .daemon-dot-halo {
+    background-color: var(--wechat-green);
+    animation: ring-pulse-small 1.8s infinite;
+    opacity: 0.35;
+}
+
+.daemon-dot.starting {
+    background-color: var(--warning-amber);
+}
+
+.daemon-dot.starting + .daemon-dot-halo {
+    background-color: var(--warning-amber);
+    animation: ring-pulse-small 1.2s infinite;
+    opacity: 0.45;
+}
+
+.daemon-dot.error {
+    background-color: var(--error-red);
+    box-shadow: 0 0 4px var(--error-red);
+}
+
+@keyframes ring-pulse-small {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+}
+
+.daemon-label-mini {
+    font-size: var(--daemon-label-size);
+    font-weight: 500;
+    color: var(--vscode-descriptionForeground);
+}
+
+/* Control Buttons styling */
+.control-btn-mini {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    padding: var(--daemon-btn-padding);
+    border-radius: 4px;
+    font-size: var(--daemon-btn-size);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.control-btn-mini:hover {
+    background-color: var(--vscode-button-hoverBackground);
+    transform: translateY(-0.5px);
+}
+
+.control-btn-mini:active {
+    transform: translateY(0);
+}
+
+/* Guide Panel Compact styling */
+.guide-panel {
+    border-top: 1px dashed var(--vscode-widget-border);
+    width: 100%;
+    box-sizing: border-box;
+    padding-top: 6px;
+}
+
+.panel-heading {
+    font-size: var(--panel-heading-size);
+    font-weight: 700;
+    color: var(--vscode-descriptionForeground);
+    margin: var(--panel-heading-margin);
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.guide-section {
+    margin-bottom: 6px;
+}
+
+.guide-section:last-child {
+    margin-bottom: 0;
+}
+
+.guide-list-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.guide-item-compact {
+    display: flex;
+    align-items: center;
+    gap: var(--guide-item-gap);
+    padding: var(--guide-item-padding);
+    border-radius: 4px;
+    background: rgba(var(--vscode-widget-border-rgb, 128, 128, 128), 0.02);
+    border: 1px solid rgba(var(--vscode-widget-border-rgb, 128, 128, 128), 0.05);
+    transition: all var(--transition-smooth);
+}
+
+.guide-item-compact:hover {
+    background: rgba(var(--vscode-widget-border-rgb, 128, 128, 128), 0.05);
+    border-color: rgba(var(--vscode-widget-border-rgb, 128, 128, 128), 0.12);
+}
+
+.badge-num {
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: var(--badge-font-size);
+    font-weight: 700;
+    color: var(--wechat-green);
+    background: rgba(7, 193, 96, 0.08);
+    width: var(--badge-size);
+    height: var(--badge-size);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-smooth);
+}
+
+.badge-num.warn {
+    color: var(--warning-amber);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.badge-num.reset {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.badge-num.awake {
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.badge-num.lock {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.badge-num.qr {
+    color: #06b6d4;
+    background: rgba(6, 182, 212, 0.08);
+}
+
+.guide-text {
+    font-size: var(--guide-text-size);
+    color: var(--vscode-descriptionForeground);
+    line-height: 1.3;
+}
+
+.guide-text code {
+    font-family: var(--vscode-editor-font-family, monospace);
+    background-color: var(--vscode-textCodeBlock-background);
+    padding: 0.5px 2px;
+    border-radius: 2px;
+    font-size: 8.5px;
+    color: var(--vscode-editor-foreground);
+}
+
+.guide-text b {
+    color: var(--vscode-editor-foreground);
+    font-weight: 600;
+}
