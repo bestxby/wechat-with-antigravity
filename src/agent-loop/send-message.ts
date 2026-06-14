@@ -44,6 +44,15 @@ async function main() {
     await sender.sendText(fromUserId, cToken, text);
     console.log('Message sent successfully!');
   }
+
+  // Clear instruction file after successful delivery to prevent duplicate consumption
+  const instFile = path.join(agentCoreDir, 'wechat-instruction.txt');
+  if (fs.existsSync(instFile)) {
+    try {
+      fs.unlinkSync(instFile);
+      console.log('Cleared wechat-instruction.txt');
+    } catch (e) {}
+  }
 }
 
 main().catch(err => {

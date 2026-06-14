@@ -21,6 +21,64 @@ function updateActiveWorkspace(workspacePath: string) {
     }
 }
 
+function registerWorkspace(workspacePath: string) {
+    try {
+        if (!fs.existsSync(DATA_DIR)) {
+            fs.mkdirSync(DATA_DIR, { recursive: true });
+        }
+        const wsFile = path.join(DATA_DIR, 'workspaces.json');
+        let workspaces: string[] = [];
+        if (fs.existsSync(wsFile)) {
+            try {
+                workspaces = JSON.parse(fs.readFileSync(wsFile, 'utf-8'));
+            } catch (e) {}
+        }
+        if (!Array.isArray(workspaces)) {
+            workspaces = [];
+        }
+        const normPath = path.resolve(workspacePath);
+        const exists = workspaces.some(w => path.resolve(w).toLowerCase() === normPath.toLowerCase());
+        if (!exists) {
+            workspaces.push(workspacePath);
+            fs.writeFileSync(wsFile, JSON.stringify(workspaces, null, 2), 'utf-8');
+            console.log(`[WeChat Extension] Registered workspace: ${workspacePath}`);
+        }
+    } catch (err: any) {
+        console.error(`[WeChat Extension] Failed to register workspace: ${err.message}`);
+    }
+}
+
+function unregisterWorkspace(workspacePath: string) {
+    try {
+        const wsFile = path.join(DATA_DIR, 'workspaces.json');
+        if (fs.existsSync(wsFile)) {
+            let workspaces: string[] = [];
+            try {
+                workspaces = JSON.parse(fs.readFileSync(wsFile, 'utf-8'));
+            } catch (e) {}
+            if (Array.isArray(workspaces)) {
+                const normPath = path.resolve(workspacePath);
+                const beforeLength = workspaces.length;
+                workspaces = workspaces.filter(w => path.resolve(w).toLowerCase() !== normPath.toLowerCase());
+                if (workspaces.length !== beforeLength) {
+                    fs.writeFileSync(wsFile, JSON.stringify(workspaces, null, 2), 'utf-8');
+                    console.log(`[WeChat Extension] Unregistered workspace: ${workspacePath}`);
+                }
+            }
+        }
+        // Clear active workspace if it matches the current one
+        const activeWsFile = path.join(DATA_DIR, 'active_workspace.txt');
+        if (fs.existsSync(activeWsFile)) {
+            const activeWs = fs.readFileSync(activeWsFile, 'utf-8').trim();
+            if (path.resolve(activeWs).toLowerCase() === path.resolve(workspacePath).toLowerCase()) {
+                fs.writeFileSync(activeWsFile, '', 'utf-8');
+            }
+        }
+    } catch (err: any) {
+        console.error(`[WeChat Extension] Failed to unregister workspace: ${err.message}`);
+    }
+}
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('WeChat Antigravity Extension is now active!');
     
@@ -35,6 +93,8 @@ export function activate(context: vscode.ExtensionContext) {
         ideLockPath = path.join(agentDir, '.ide.lock');
         fs.writeFileSync(ideLockPath, process.pid.toString(), 'utf-8');
         console.log(`Created IDE lock at ${ideLockPath} with PID ${process.pid}`);
+        
+        registerWorkspace(workspacePath);
         updateActiveWorkspace(workspacePath);
     }
 
@@ -163,6 +223,10 @@ export function deactivate() {
             fs.unlinkSync(ideLockPath);
             console.log('Removed IDE lock.');
         } catch (e) {}
+    }
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders && workspaceFolders.length > 0) {
+        unregisterWorkspace(workspaceFolders[0].uri.fsPath);
     }
     console.log('WeChat Antigravity Extension deactivated.');
 }

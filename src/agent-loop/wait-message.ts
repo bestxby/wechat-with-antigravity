@@ -9,6 +9,7 @@ import { createSender } from '../wechat/send.js';
 import { MessageType, WeixinMessage } from '../wechat/types.js';
 import { extractText, extractFirstImageUrl, extractFirstFileItem, extractFirstVoiceItem, downloadVoice, saveImageToFile } from '../wechat/media.js';
 import { logger } from '../logger.js';
+import { DATA_DIR } from '../constants.js';
 
 async function main() {
   let workspacePath = process.env.WCC_ACTIVE_WORKSPACE || '';
@@ -31,7 +32,7 @@ async function main() {
   if (!fs.existsSync(agentCoreDir)) {
     fs.mkdirSync(agentCoreDir, { recursive: true });
   }
-  const lockPath = path.join(agentCoreDir, '.listener.lock');
+  const lockPath = path.join(DATA_DIR, 'listener.lock');
   if (fs.existsSync(lockPath)) {
     const pid = fs.readFileSync(lockPath, 'utf8');
     try {

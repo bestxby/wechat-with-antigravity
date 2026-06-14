@@ -26,14 +26,16 @@ Following a deep architectural refactoring, we have completely abandoned traditi
 
 ## 🛠️ WeChat Convenient Commands
 
-You can send the following built-in slash commands directly via WeChat to inspect and control your computer system:
+You can send the following slash commands directly via WeChat to inspect and control your computer system (these commands will be intercepted and executed via native shell by the local AI Agent that hooks into your WeChat):
 
-* **`/status`**: Check system health status. Outputs real-time CPU load, memory usage (used/total/percentage), logical disk space (used/free/percentage), and system uptime.
-* **`/lock`**: Lock the computer workstation. Calls native Windows APIs to lock your computer screen instantly.
+* **`/screenshot`**: Take a high-resolution screenshot of your desktop and IDE. Supports auto DPI-scaling, captures the primary screen, and sends it directly back to your WeChat.
+* **`/tasks`**: List current background tasks and active running processes on your local machine.
+* **`/kill <ID>`**: Terminate a specific background task or unresponsive process remotely.
+* **`/status`**: Check system health status. Outputs real-time CPU load, memory usage percentage, disk partition space (used/free), and system uptime.
 * **`/sleep`**: Suspend the computer system. Puts your PC to sleep mode immediately to save power. When you wake it up, the agent loop will resume.
-* **`/screenshot`**: Take a high-resolution desktop screenshot. Supports auto DPI-scaling, captures your primary screen, and sends it directly back to your WeChat.
-* **`/awake`**: Toggle Awake Mode (prevent automatic sleep). Automatically starts or terminates the background script that prevents Windows from entering sleep mode when idle.
+* **`/lock`**: Lock the computer workstation. Calls native Windows APIs to lock your computer screen instantly.
 * **`/reset`**: Reset agent memory. Clears the current conversation context and task state so you can start a fresh task.
+* **`/awake`**: Toggle Awake Mode (prevent automatic sleep). Automatically starts or terminates the background script that prevents Windows from entering sleep mode when idle.
 
 ---
 
@@ -44,42 +46,54 @@ You can send the following built-in slash commands directly via WeChat to inspec
 
 ---
 
-## 🚀 Detailed Usage Guide
+## 🚀 Installation & Startup Guidelines
 
-### Step 1: Initialize and Login
+To ensure you can run the bridge successfully from scratch, please follow these steps in order:
 
-First, install dependencies and run the setup script in the project root directory.
+### 1. Install Dependencies & Build
 
-```bash
-npm install
-npm run setup
-```
-
-A QR code will render on your terminal screen. Scan it with your personal WeChat. Upon success, your credentials and connection state will be stored locally in the `~/.wechat-claude-code` directory.
+* **If you are using CLI/Skill modes, or want to compile the extension from source:**
+  Execute the following command in the project root:
+  ```bash
+  npm install
+  ```
+  > [!TIP]
+  > This project features a `postinstall` hook. Running `npm install` automatically triggers `npm run build` to compile TypeScript. If you edit any source code, run `npm run build` manually to update build outputs.
+  
+* **If you are a regular extension user (installing via VSIX):**
+  **Do NOT** run `npm install` or `npm run build` manually. Skip straight to installing the VSIX as described below.
 
 ---
 
-### Step 2: Start the Bridge (Choose one of three ways)
+### 2. Initialize WeChat Binding & Login
+
+Regardless of the startup method chosen, you must scan the QR code to bind your WeChat account:
+Run the setup script in the project root:
+```bash
+npm run setup
+```
+Scan the rendered QR code on the terminal screen with your personal WeChat. Upon success, your session credentials will be saved in `~/.wechat-claude-code`.
+
+---
+
+### 3. Start the Bridge (Choose one of three ways)
 
 #### Option A: Automatic Management via Antigravity IDE Extension (Highly Recommended)
 
 By installing the local IDE extension, you can visually toggle the WeChat bridge directly from the IDE sidebar, and enjoy fully automated background message polling and agent wake-ups.
 
 1. **Install the extension**:
-   * **Method 1: Install from VSIX package (Highly Recommended, Easiest)**:
-     * Download the latest `wechat-antigravity-bridge-2.1.0.vsix` from the GitHub Releases page.
-     * Open Antigravity IDE, press `Ctrl + Shift + P` (or `Cmd + Shift + P` on macOS) to open the Command Palette, select **`Extensions: Install from VSIX...`**, and choose the downloaded vsix file; or run the following in your terminal:
-       ```bash
-       antigravity --install-extension wechat-antigravity-bridge-2.1.0.vsix
-       ```
-   * **Method 2: Manual compilation (For developers/contributors)**:
-     * Compile the source code:
-       ```bash
-       npm run build
-       ```
-     * Symlink or copy the repository folder to the IDE's extensions folder:
-       * **Windows**: `C:\Users\<username>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.1.0`
-       * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.1.0`
+    * **Method 1: Install from VSIX package (Highly Recommended, Easiest)**:
+      * Download the latest `wechat-antigravity-bridge-2.2.0.vsix` from the GitHub Releases page.
+      * Open Antigravity IDE, press `Ctrl + Shift + P` (or `Cmd + Shift + P` on macOS) to open the Command Palette, select **`Extensions: Install from VSIX...`**, and choose the downloaded vsix file; or run the following in your terminal:
+        ```bash
+        antigravity --install-extension wechat-antigravity-bridge-2.2.0.vsix
+        ```
+    * **Method 2: Manual compilation (For developers/contributors)**:
+      * Make sure the extension is compiled (run `npm install` or `npm run build` in root).
+      * Symlink or copy the repository folder to the IDE's extensions folder:
+        * **Windows**: `C:\Users\<username>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.2.0`
+        * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.2.0`
      * Restart Antigravity IDE to load the extension.
 3. **Visual Configuration & Run**:
    * Click the **WeChat Agent** icon in the Antigravity IDE Activity Bar (left panel).
@@ -101,17 +115,20 @@ node /path/to/wechat-with-antigravity/dist/agent-loop/wait-message.js
 
 If your Agent platform (like Claude Code or advanced IDEs) supports the standard `SKILL.md` skill extension mechanism, we strongly recommend integrating it as a global Skill:
 1. Locate the `SKILL.md` file in the root of this project.
-2. Place it into your Agent platform's prescribed skills directory (e.g., `~/.claude/skills/wechat-listener/` or your IDE's plugin folder).
-3. Trigger the skill via its invoke command. Your current workspace will instantly transform into the global WeChat listening base station!
+2. Place it into your Agent platform's prescribed skills directory. For this Antigravity IDE environment, it follows the paths detailed in the [CC Switch Skills Management Rules](file:///C:/Users/<YourUsername>/.cc-switch/skills/):
+   - Install/copy the skill directory directly to: `C:\Users\<YourUsername>\.cc-switch\skills\wechat-claude-code\`
+   - Load it using your skill-management tool, and you can invoke the bridge command at any time!
 
 ---
 
-## 🔄 Dynamic Active Workspace Routing
+## 🔄 Active Workspace Routing
 
-When you open multiple projects (workspaces) concurrently in the IDE, they are automatically routed to avoid resource conflict:
-* **Core Mechanism**: The extension maintains a pointer to the active workspace at `~/.wechat-claude-code/active_workspace.txt`.
-* **Focus Awareness**: Switching between IDE windows automatically updates the active workspace path via the `onDidChangeWindowState` listener.
-* **Message Routing**: When the background WeChat daemon receives a new instruction, it checks `active_workspace.txt` first and redirects execution to the active workspace's communication channel, allowing you to control whatever workspace you are currently focused on.
+When you open multiple projects (workspaces) in the IDE, they avoid conflict through a centralized routing system:
+* **Core Mechanism**: The system registers all currently open workspaces in `workspaces.json` and records the path of the active receiver workspace in `active_workspace.txt`.
+* **Focus Awareness**: When you click or switch to an IDE window, the extension automatically updates the active receiver path to `active_workspace.txt`.
+* **Visual Workspace Console**: The WeChat Agent sidebar console lists all active workspaces in real time and highlights the current receiver workspace with a dynamic green "RECEIVING" badge.
+* **Interactive Manual Switch**: You can click directly on any workspace item in the sidebar workspaces list to manually switch and route incoming WeChat messages to that workspace.
+* **Message Routing**: The WeChat daemon reads the active workspace path on message arrival and routes the payload to the corresponding workspace, letting you control whichever project you are currently working on.
 
 ---
 

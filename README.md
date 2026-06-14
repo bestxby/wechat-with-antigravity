@@ -26,14 +26,16 @@
 
 ## 🛠️ 微信端便捷指令集 (Convenient Commands)
 
-在微信对话中，您可以发送以下内置的斜杠指令（Slash Commands）直接控制和查看您的电脑系统：
+在微信对话中，您可以发送以下斜杠指令（Slash Commands）直接控制和查看您的电脑系统（这些指令会被接管微信的本地 AI Agent 捕获并自主通过系统命令行执行）：
 
-* **`/status`**：查看系统健康状态。实时输出当前系统的 CPU 负载、内存使用量/总量/百分比、各磁盘分区容量（已用/空闲/百分比）以及系统已开机时间。
-* **`/lock`**：锁定电脑工作站。通过调用 Windows API 立即锁定屏幕，保护电脑隐私安全。
+* **`/screenshot`**：获取实时桌面及 IDE 高清截图。支持高 DPI 自适应缩放，截取当前主屏幕的完整画面并自动发送给您。
+* **`/tasks`**：查看本地正在后台运行的任务及进程列表。
+* **`/kill <ID>`**：远程终止指定的卡死进程或运行中的后台任务。
+* **`/status`**：查看本地系统健康状态。实时输出当前系统的 CPU 负载、内存使用百分比、各磁盘分区已用/空闲容量以及系统开机时间。
 * **`/sleep`**：使电脑进入睡眠模式。挂起当前系统进入低功耗休眠，当您重新唤醒电脑时，智能体将恢复工作。
-* **`/screenshot`**：获取实时桌面高清截图。支持高 DPI 自适应缩放，截取当前主屏幕的完整画面并自动发送给您。
-* **`/awake`**：防休眠挂机模式开关。如果当前未运行防休眠，发送后将立即开启（保持系统清醒以接收微信消息）；如果正在运行，发送后将自动关闭。
+* **`/lock`**：锁定电脑工作站。通过调用 Windows API 立即锁定屏幕，保护电脑隐私安全。
 * **`/reset`**：重置智能体记忆。清空当前的任务流与对话上下文，让智能体大脑重归零点，开始处理全新任务。
+* **`/awake`**：防休眠挂机模式开关。如果当前未运行防休眠，发送后将立即开启（保持系统清醒以接收微信消息）；如果正在运行，发送后将自动关闭。
 
 ---
 
@@ -44,25 +46,38 @@
 
 ---
 
-## 🚀 详细使用指南
+## 🚀 极速安装与服务启动指南
 
-### 第一步：初始化与微信登录
+为确保您能够一次性顺利跑通，请严格按照以下说明和顺序进行配置：
 
-在项目根目录下安装所需的依赖，然后运行登录脚本：
+### 1. 依赖安装与编译
 
+* **如果您是终端命令行或 Skill 玩家，或者想从源码调试插件：**
+  在项目根目录下执行以下命令：
+  ```bash
+  npm install
+  ```
+  > [!TIP]
+  > 本项目配置了 `postinstall` 钩子，`npm install` 完毕后会自动执行 `npm run build` 进行 TypeScript 编译。如果因代码修改想重新编译，可随时运行 `npm run build`。
+  
+* **如果您是普通插件用户（直接使用 VSIX 离线包）：**
+  **不需要**在控制台执行任何 `npm install` 或 `npm run build` 命令，直接参考下文中的【方法一：通过 VSIX 离线包安装】即可。
+
+---
+
+### 2. 初始化微信绑定与登录
+
+无论采用何种启动方式，均需先进行一次扫码绑定：
+在根目录运行登录脚本：
 ```bash
-npm install
 npm run setup
 ```
-
 运行后，终端中会渲染出一个登录二维码。请使用您的**个人微信**进行扫码。
 扫码成功并成功登录后，相关的状态和会话登录凭证（Credentials）将被加密保存在您本地的 `~/.wechat-claude-code` 目录中。
 
 ---
 
-### 第二步：安装并启动服务
-
-我们提供了三种启动和接管方式：
+### 3. 安装并启动服务 (三种方式任选其一)
 
 #### 方式 A：通过 Antigravity IDE 插件自动管理 (强烈推荐)
 
@@ -70,19 +85,16 @@ npm run setup
 
 1. **安装插件**：
    * **方法一：通过 VSIX 离线包安装 (强烈推荐，最简单)**：
-     * 前往 GitHub Releases 页面下载最新的 `wechat-antigravity-bridge-2.1.0.vsix` 文件。
+     * 前往 GitHub Releases 页面下载最新的 `wechat-antigravity-bridge-2.2.0.vsix` 文件。
      * 打开 Antigravity IDE，按 `Ctrl + Shift + P` 唤起命令面板，选择 **`Extensions: Install from VSIX...`** 并导入下载好的 vsix 文件；或者在终端中运行：
        ```bash
-       antigravity --install-extension wechat-antigravity-bridge-2.1.0.vsix
+       antigravity --install-extension wechat-antigravity-bridge-2.2.0.vsix
        ```
    * **方法二：本地源码手动安装 (适合开发调试的用户)**：
-     * 在根目录编译插件代码：
-       ```bash
-       npm run build
-       ```
+     * 确保已在根目录编译插件代码（执行了 `npm install` 或手动运行 `npm run build`）。
      * 将整个项目文件夹复制或建立软链接到以下路径：
-       * **Windows**: `C:\Users\<您的用户名>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.1.0`
-       * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.1.0`
+       * **Windows**: `C:\Users\<您的用户名>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.2.0`
+       * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.2.0`
      * 重启 Antigravity IDE，插件即会自动激活。
 3. **可视化配置与运行**：
    * 启动 Antigravity IDE 后，点击左侧活动栏 (Activity Bar) 中的 **WeChat Agent** 微信小图标。
@@ -104,17 +116,20 @@ node /path/to/wechat-with-antigravity/dist/agent-loop/wait-message.js
 
 如果您的 Agent 工具（如 Claude Code、各类 IDE 等）支持标准的 `SKILL.md` 技能扩展机制，强烈建议您将其集成为一个全局 Skill：
 1. 找到本项目根目录下的 `SKILL.md` 文件。
-2. 将其放入您的 Agent 平台所规定的 Skills 目录中（例如 `~/.claude/skills/wechat-listener/` 或是您 IDE 的专属技能插件库中）。
-3. 通过唤醒词或快捷命令直接执行该 Skill，即可一键将当前工作区化身为微信监听基站！
+2. 将其放入您的 Agent 平台的 Skills 目录中。以本环境（Antigravity IDE）为例，默认的 skills 路径规则如 [CC Switch Skills Management Rules](file:///C:/Users/<您的用户名>/.cc-switch/skills/) 所述：
+   - 将技能目录安装或拷贝到：`C:\Users\<您的用户名>\.cc-switch\skills\wechat-claude-code\`
+   - 通过技能管理工具加载该 Skill 即可一键拉起监听！
 
 ---
 
 ## 🔄 动态多工作区路由 (Active Workspace Routing)
 
-当您在 IDE 中同时打开多个项目（工作区）时，它们会通过底层的路由机制避免消息冲突：
-* **核心机制**：系统在 `~/.wechat-claude-code/active_workspace.txt` 中写入当前处于焦点/活动状态的工作区绝对路径。
-* **焦点感知**：当您的鼠标点击或切换到某个 IDE 窗口时，插件会监听 `onDidChangeWindowState` 事件，自动将当前激活的窗口路径更新到 `active_workspace.txt`。
-* **消息路由**：WeChat 守护进程（Daemon）收到新消息后，会优先读取该文件，并自动将消息路由到对应的工作区进行处理（使用对应工作区的本地 `.wechat-agent` 通信管道），真正实现“鼠标切到哪，微信就控制哪”。
+当您在 IDE 中同时打开多个项目（工作区）时，它们会通过底层的路由机制进行消息分发与切换：
+* **核心机制**：系统在 `~/.wechat-claude-code/workspaces.json` 中记录当前所有打开的 IDE 工作区，并在 `active_workspace.txt` 中记录当前被激活的消息接收工作区。
+* **焦点感知**：当您的鼠标点击或切换到某个 IDE 窗口时，插件会自动将当前激活的窗口路径写入到 `active_workspace.txt`。
+* **可视化看板**：WeChat 侧边栏控制台内置了“🖥️ 活跃工作区”看板，实时渲染出所有打开的代码仓，并为当前接收消息的活跃窗口打上绿色的 “接收中 / RECEIVING” 呼吸徽章。
+* **手动点击切换**：除了聚焦自动切换，您还可以直接在侧边栏的列表中点击任意一个工作区，立刻手动将消息接收大脑路由转移到对应的窗口。
+* **消息路由**：微信消息监听器收到新指令后，会优先读取该活跃窗口配置，并自动在其对应的工作区路径中写入任务并唤醒智能体。
 
 ---
 

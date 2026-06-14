@@ -4,6 +4,24 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { logger } from '../logger.js';
+import { DATA_DIR } from '../constants.js';
+
+let retryTimeout: NodeJS.Timeout | null = null;
+
+function isLockActive(): boolean {
+  try {
+    const lockPath = path.join(DATA_DIR, 'listener.lock');
+    if (fs.existsSync(lockPath)) {
+      const pidStr = fs.readFileSync(lockPath, 'utf-8').trim();
+      const pid = parseInt(pidStr, 10);
+      if (!isNaN(pid) && pid > 0) {
+        process.kill(pid, 0); // Throws error if process does not exist
+        return true;
+      }
+    }
+  } catch (e) {}
+  return false;
+}
 
 export type DaemonStatus = 'stopped' | 'starting' | 'running' | 'error';
 
@@ -48,6 +66,23 @@ export function startDaemon(extensionPath: string, workspacePath?: string): void
 }
 
 function _spawn(extensionPath: string): void {
+  if (retryTimeout) {
+    clearTimeout(retryTimeout);
+    retryTimeout = null;
+  }
+
+  if (isLockActive()) {
+    log('Another workspace holds the active polling lock. Checking again in 10 seconds.');
+    stateCallback?.('running');
+    retryTimeout = setTimeout(() => {
+      retryTimeout = null;
+      if (restartCount < MAX_RESTARTS) {
+        _spawn(extensionPath);
+      }
+    }, 10000);
+    return;
+  }
+
   const scriptPath = path.join(extensionPath, 'dist', 'agent-loop', 'wait-message.js');
   log(`Starting daemon: node ${scriptPath}`);
   stateCallback?.('starting');
@@ -90,6 +125,13 @@ function _spawn(extensionPath: string): void {
       // Lock file conflict — another instance is running
       log('Another daemon instance is already running (lock file detected). Treating as running.');
       stateCallback?.('running');
+      if (retryTimeout) clearTimeout(retryTimeout);
+      retryTimeout = setTimeout(() => {
+        retryTimeout = null;
+        if (restartCount < MAX_RESTARTS) {
+          _spawn(extensionPath);
+        }
+      }, 10000);
       return;
     }
 
@@ -126,13 +168,17 @@ function _spawn(extensionPath: string): void {
 }
 
 export function stopDaemon(): void {
+  log('Stopping daemon...');
+  restartCount = MAX_RESTARTS; // prevent auto-restart
+  if (retryTimeout) {
+    clearTimeout(retryTimeout);
+    retryTimeout = null;
+  }
   if (daemonProcess && daemonProcess.exitCode === null) {
-    log('Stopping daemon...');
-    restartCount = MAX_RESTARTS; // prevent auto-restart
     daemonProcess.kill('SIGTERM');
     daemonProcess = null;
-    stateCallback?.('stopped');
   }
+  stateCallback?.('stopped');
 }
 
 function wakeUpAgent(payload: any) {
@@ -250,21 +296,23 @@ function wakeUpAgent(payload: any) {
   log(`Resolved executable path: ${exePath}`);
   log(`Resolved CLI helper path: ${cliJsPath}`);
 
-  let workspacePath = activeWorkspacePath || path.join(process.cwd());
-  if (!activeWorkspacePath) {
-    try {
-      const dataDir = process.env.WCC_DATA_DIR || path.join(os.homedir(), '.wechat-claude-code');
-      const activeWsFile = path.join(dataDir, 'active_workspace.txt');
-      if (fs.existsSync(activeWsFile)) {
-        const activePath = fs.readFileSync(activeWsFile, 'utf-8').trim();
-        if (activePath && fs.existsSync(activePath)) {
-          workspacePath = activePath;
-          log(`Routing agent wakeup to active workspace: ${workspacePath}`);
-        }
+  let workspacePath = '';
+  try {
+    const dataDir = process.env.WCC_DATA_DIR || path.join(os.homedir(), '.wechat-claude-code');
+    const activeWsFile = path.join(dataDir, 'active_workspace.txt');
+    if (fs.existsSync(activeWsFile)) {
+      const activePath = fs.readFileSync(activeWsFile, 'utf-8').trim();
+      if (activePath && fs.existsSync(activePath)) {
+        workspacePath = activePath;
+        log(`Routing agent wakeup to active workspace: ${workspacePath}`);
       }
-    } catch (err: any) {
-      log(`Failed to read active workspace file: ${err.message}`);
     }
+  } catch (err: any) {
+    log(`Failed to read active workspace file: ${err.message}`);
+  }
+
+  if (!workspacePath) {
+    workspacePath = activeWorkspacePath || path.join(process.cwd());
   }
 
   try {
