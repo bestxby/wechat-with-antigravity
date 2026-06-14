@@ -298,7 +298,7 @@ function wakeUpAgent(payload: any) {
 
   let workspacePath = '';
   try {
-    const dataDir = process.env.WCC_DATA_DIR || path.join(os.homedir(), '.wechat-claude-code');
+    const dataDir = process.env.WCC_DATA_DIR || path.join(os.homedir(), '.wechat-antigravity');
     const activeWsFile = path.join(dataDir, 'active_workspace.txt');
     if (fs.existsSync(activeWsFile)) {
       const activePath = fs.readFileSync(activeWsFile, 'utf-8').trim();

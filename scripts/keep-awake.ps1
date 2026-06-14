@@ -25,7 +25,7 @@ $ES_SYSTEM_REQUIRED = 0x00000001
 [Sleeper]::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_SYSTEM_REQUIRED) | Out-Null
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "  WeChat-Claude-Code Awake Mode Active" -ForegroundColor Green
+Write-Host "  WeChat-Antigravity Awake Mode Active" -ForegroundColor Green
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "System sleep is now PREVENTED."
 Write-Host "You will continue to receive WeChat messages 24/7."

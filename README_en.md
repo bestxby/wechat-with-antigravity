@@ -40,7 +40,7 @@ You can send the following built-in slash commands directly via WeChat to inspec
 ## 🛠️ Prerequisites
 
 1. Node.js (v18+) and npm installed locally.
-2. A running Agent platform that supports terminal commands or standard AI Skills (e.g., Antigravity IDE, Claude Code).
+2. A running Agent platform that supports terminal commands (e.g., Antigravity IDE, Claude Code).
 
 ---
 
@@ -55,7 +55,7 @@ npm install
 npm run setup
 ```
 
-A QR code will render on your terminal screen. Scan it with your personal WeChat. Upon success, your credentials and connection state will be stored locally in the `~/.wechat-claude-code` directory.
+A QR code will render on your terminal screen. Scan it with your personal WeChat. Upon success, your credentials and connection state will be stored locally in the `~/.wechat-antigravity` directory.
 
 ---
 
@@ -96,14 +96,6 @@ You can start the listener in any workspace you want the agent to control by dir
 # Ensure you are in your target project workspace and pass the absolute path to the script
 node /path/to/wechat-with-antigravity/dist/agent-loop/wait-message.js
 ```
-
-#### Option C: Elegant AI Skill Integration
-
-If your Agent platform (like Claude Code or advanced IDEs) supports the standard `SKILL.md` skill extension mechanism, we strongly recommend integrating it as a global Skill:
-1. Locate the `SKILL.md` file in the root of this project.
-2. Place it into your Agent platform's prescribed skills directory (e.g., `~/.claude/skills/wechat-listener/` or your IDE's plugin folder).
-3. Trigger the skill via its invoke command. Your current workspace will instantly transform into the global WeChat listening base station!
-
 ---
 
 ## 🔄 Active Workspace Routing

@@ -9,7 +9,7 @@ export interface Config {
   systemPrompt?: string;
 }
 
-const CONFIG_DIR = join(homedir(), ".wechat-claude-code");
+const CONFIG_DIR = join(homedir(), ".wechat-antigravity");
 const CONFIG_PATH = join(CONFIG_DIR, "config.json");
 
 const DEFAULT_CONFIG: Config = {

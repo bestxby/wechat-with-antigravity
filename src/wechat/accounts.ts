@@ -14,7 +14,7 @@ export interface AccountData {
   createdAt: string;
 }
 
-const ACCOUNTS_DIR = join(homedir(), '.wechat-claude-code', 'accounts');
+const ACCOUNTS_DIR = join(homedir(), '.wechat-antigravity', 'accounts');
 
 function accountPath(accountId: string): string {
   validateAccountId(accountId);

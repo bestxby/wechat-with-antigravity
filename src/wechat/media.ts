@@ -87,7 +87,7 @@ export async function saveImageToFile(item: MessageItem): Promise<string | null>
 
   try {
     const decrypted = await downloadAndDecrypt(cdnData.encryptQueryParam, cdnData.aesKey);
-    const tmpDir = path.join(os.tmpdir(), 'wechat-claude-code');
+    const tmpDir = path.join(os.tmpdir(), 'wechat-antigravity');
     fs.mkdirSync(tmpDir, { recursive: true });
     
     let ext = '.jpg';
@@ -157,7 +157,7 @@ export async function downloadFile(item: MessageItem): Promise<string | null> {
 
   try {
     const decrypted = await downloadAndDecrypt(encryptQueryParam, aesKey);
-    const tmpDir = path.join(os.tmpdir(), 'wechat-claude-code');
+    const tmpDir = path.join(os.tmpdir(), 'wechat-antigravity');
     fs.mkdirSync(tmpDir, { recursive: true });
     const fileName = fileItem.file_name || `file-${Date.now()}.bin`;
     const filePath = path.join(tmpDir, fileName);
@@ -201,7 +201,7 @@ export async function downloadVoice(item: MessageItem): Promise<string | null> {
 
   try {
     const decrypted = await downloadAndDecrypt(encryptQueryParam, aesKey);
-    const tmpDir = path.join(os.tmpdir(), 'wechat-claude-code');
+    const tmpDir = path.join(os.tmpdir(), 'wechat-antigravity');
     fs.mkdirSync(tmpDir, { recursive: true });
     const fileName = `voice-${Date.now()}.amr`; // WeChat often uses AMR or SILK for voice
     const filePath = path.join(tmpDir, fileName);

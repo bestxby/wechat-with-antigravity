@@ -187,8 +187,11 @@ body {
 .card-glow {
     position: relative;
     background: var(--vscode-editorWidget-background);
+    background: linear-gradient(135deg, var(--vscode-editorWidget-background), var(--vscode-sideBar-background));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--vscode-widget-border);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     width: 100%;
     box-sizing: border-box;
@@ -507,18 +510,20 @@ body {
     font-size: var(--daemon-btn-size);
     font-weight: 600;
     cursor: pointer;
-    transition: background-color var(--transition-fast), transform var(--transition-fast);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .control-btn-mini:hover {
     background-color: var(--vscode-button-hoverBackground);
-    transform: translateY(-0.5px);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
 .control-btn-mini:active {
     transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .control-btn-mini.running {
@@ -663,9 +668,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-height: 120px;
+    max-height: 122px;
     overflow-y: auto;
-    padding-right: 2px;
+    padding: 2px 4px 4px 2px;
 }
 
 .workspaces-list::-webkit-scrollbar {
@@ -676,6 +681,7 @@ body {
     border-radius: 1px;
 }
 
+/* Workspaces List Item Styles */
 .workspace-item {
     display: flex;
     align-items: center;
@@ -684,18 +690,22 @@ body {
     background: var(--vscode-keybindingLabel-background, rgba(128, 128, 128, 0.05));
     border: 1px solid var(--vscode-keybindingLabel-border, rgba(128, 128, 128, 0.1));
     border-radius: 4px;
-    transition: var(--transition-fast);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
 }
 
 .workspace-item:hover {
     background: var(--vscode-list-hoverBackground, rgba(128, 128, 128, 0.1));
     border-color: var(--vscode-list-activeSelectionBackground, rgba(128, 128, 128, 0.25));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .workspace-item.active:hover {
     background: rgba(7, 193, 96, 0.08);
     border-color: rgba(7, 193, 96, 0.45);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(7, 193, 96, 0.12);
 }
 
 .workspace-item-left {
@@ -708,7 +718,41 @@ body {
 }
 
 .workspace-icon {
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* SVG icon styling and alignment */
+.title-svg-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+    position: relative;
+    top: -1px;
+    color: var(--vscode-descriptionForeground);
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-heading:hover .title-svg-icon,
+.workspaces-title:hover .title-svg-icon {
+    color: var(--wechat-green);
+}
+
+.svg-icon-avatar {
+    display: block;
+    color: var(--wechat-green);
+}
+
+.svg-icon-folder {
+    display: inline-block;
+    vertical-align: middle;
+    color: var(--vscode-descriptionForeground);
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workspace-item:hover .svg-icon-folder {
+    color: var(--wechat-green);
 }
 
 .workspace-name {

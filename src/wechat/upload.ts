@@ -61,7 +61,7 @@ export async function uploadFile(
     aeskey: aesKeyHex,
     base_info: {
       channel_version: '2.0.0',
-      bot_agent: 'wechat-claude-code',
+      bot_agent: 'wechat-antigravity',
     },
   });
 
