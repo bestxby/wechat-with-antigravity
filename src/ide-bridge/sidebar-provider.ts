@@ -1,13 +1,16 @@
 import * as vscode from 'vscode';
 import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { startExtensionLoginFlow, stopExtensionLoginFlow, type AuthState } from './auth.js';
 import { initDaemon, startDaemon, stopDaemon, type DaemonStatus } from './daemon.js';
 import { loadLatestAccount, deleteAccount } from '../wechat/accounts.js';
+import { DATA_DIR } from '../constants.js';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'wechat-antigravity.sidebar';
   private _view?: vscode.WebviewView;
   private _outputChannel: vscode.OutputChannel;
+  private _watcher: fs.FSWatcher | null = null;
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     this._outputChannel = vscode.window.createOutputChannel('WeChat Daemon');
@@ -27,6 +30,32 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     };
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+    // Ensure DATA_DIR exists
+    if (!fs.existsSync(DATA_DIR)) {
+      try {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      } catch (e) {}
+    }
+
+    // Set up FS Watcher on DATA_DIR to track workspaces list & active workspace changes in real-time
+    try {
+      this._watcher = fs.watch(DATA_DIR, (eventType, filename) => {
+        if (filename === 'workspaces.json' || filename === 'active_workspace.txt') {
+          this.sendWorkspacesToWebview();
+        }
+      });
+    } catch (e: any) {
+      this._outputChannel.appendLine(`[WeChat Daemon] Failed to start folder watcher: ${e.message}`);
+    }
+
+    webviewView.onDidDispose(() => {
+      if (this._watcher) {
+        this._watcher.close();
+        this._watcher = null;
+      }
+      this._view = undefined;
+    });
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -52,12 +81,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               startDaemon(this._extensionUri.fsPath);
             }
           });
+          this.sendWorkspacesToWebview();
           break;
         case 'daemonStop':
           stopDaemon();
           break;
         case 'daemonStart':
           startDaemon(this._extensionUri.fsPath);
+          break;
+        case 'selectActiveWorkspace':
+          try {
+            const wsPath = data.workspacePath;
+            if (wsPath) {
+              const activeWsFile = path.join(DATA_DIR, 'active_workspace.txt');
+              fs.writeFileSync(activeWsFile, wsPath, 'utf-8');
+              this._outputChannel.appendLine(`[WeChat Daemon] User selected active workspace: ${wsPath}`);
+            }
+          } catch (e: any) {
+            this._outputChannel.appendLine(`[WeChat Daemon] Failed to select active workspace: ${e.message}`);
+          }
           break;
       }
     });
@@ -72,6 +114,34 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   public sendDaemonStatusToWebview(status: DaemonStatus) {
     if (this._view) {
       this._view.webview.postMessage({ type: 'daemonStatus', status });
+    }
+  }
+
+  public sendWorkspacesToWebview() {
+    if (!this._view) return;
+    try {
+      const wsFile = path.join(DATA_DIR, 'workspaces.json');
+      const activeWsFile = path.join(DATA_DIR, 'active_workspace.txt');
+      
+      let workspaces: string[] = [];
+      if (fs.existsSync(wsFile)) {
+        try {
+          workspaces = JSON.parse(fs.readFileSync(wsFile, 'utf-8'));
+        } catch (e) {}
+      }
+      
+      let activeWorkspace = '';
+      if (fs.existsSync(activeWsFile)) {
+        activeWorkspace = fs.readFileSync(activeWsFile, 'utf-8').trim();
+      }
+      
+      this._view.webview.postMessage({
+        type: 'updateWorkspaces',
+        workspaces,
+        activeWorkspace
+      });
+    } catch (e: any) {
+      this._outputChannel.appendLine(`[WeChat Daemon] Failed to send workspaces to webview: ${e.message}`);
     }
   }
 
@@ -133,6 +203,60 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             btn.classList.add('running');
           } else {
             btn.classList.remove('running');
+          }
+        } else if (message.type === 'updateWorkspaces') {
+          const workspaces = message.workspaces || [];
+          const activeWorkspace = message.activeWorkspace || '';
+          const listContainer = document.getElementById('workspaces-list');
+          if (listContainer) {
+            listContainer.innerHTML = '';
+            
+            if (workspaces.length === 0) {
+              listContainer.innerHTML = '<div style="font-size: 11px; color: var(--vscode-descriptionForeground); text-align: center; padding: 10px 0;">暂无活跃工作区</div>';
+            } else {
+              workspaces.forEach(ws => {
+                const isCurrentActive = activeWorkspace && (ws.toLowerCase() === activeWorkspace.toLowerCase());
+                
+                // Extract basename
+                let name = ws;
+                if (ws.includes('\\\\')) {
+                  name = ws.substring(ws.lastIndexOf('\\\\') + 1);
+                } else if (ws.includes('/')) {
+                  name = ws.substring(ws.lastIndexOf('/') + 1);
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'workspace-item' + (isCurrentActive ? ' active' : '');
+                item.title = ws; // Show absolute path on hover
+                item.addEventListener('click', () => {
+                  vscode.postMessage({ type: 'selectActiveWorkspace', workspacePath: ws });
+                });
+                
+                const left = document.createElement('div');
+                left.className = 'workspace-item-left';
+                
+                const icon = document.createElement('span');
+                icon.className = 'workspace-icon';
+                icon.innerText = '📂';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'workspace-name';
+                nameSpan.innerText = name;
+                
+                left.appendChild(icon);
+                left.appendChild(nameSpan);
+                item.appendChild(left);
+                
+                if (isCurrentActive) {
+                  const badge = document.createElement('span');
+                  badge.className = 'workspace-active-badge';
+                  badge.innerText = '接收中';
+                  item.appendChild(badge);
+                }
+                
+                listContainer.appendChild(item);
+              });
+            }
           }
         }
       });

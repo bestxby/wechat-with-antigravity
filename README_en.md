@@ -66,20 +66,20 @@ A QR code will render on your terminal screen. Scan it with your personal WeChat
 By installing the local IDE extension, you can visually toggle the WeChat bridge directly from the IDE sidebar, and enjoy fully automated background message polling and agent wake-ups.
 
 1. **Install the extension**:
-   * **Method 1: Install from VSIX package (Highly Recommended, Easiest)**:
-     * Download the latest `wechat-antigravity-bridge-2.1.0.vsix` from the GitHub Releases page.
-     * Open Antigravity IDE, press `Ctrl + Shift + P` (or `Cmd + Shift + P` on macOS) to open the Command Palette, select **`Extensions: Install from VSIX...`**, and choose the downloaded vsix file; or run the following in your terminal:
-       ```bash
-       antigravity --install-extension wechat-antigravity-bridge-2.1.0.vsix
-       ```
-   * **Method 2: Manual compilation (For developers/contributors)**:
-     * Compile the source code:
-       ```bash
-       npm run build
-       ```
-     * Symlink or copy the repository folder to the IDE's extensions folder:
-       * **Windows**: `C:\Users\<username>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.1.0`
-       * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.1.0`
+    * **Method 1: Install from VSIX package (Highly Recommended, Easiest)**:
+      * Download the latest `wechat-antigravity-bridge-2.2.0.vsix` from the GitHub Releases page.
+      * Open Antigravity IDE, press `Ctrl + Shift + P` (or `Cmd + Shift + P` on macOS) to open the Command Palette, select **`Extensions: Install from VSIX...`**, and choose the downloaded vsix file; or run the following in your terminal:
+        ```bash
+        antigravity --install-extension wechat-antigravity-bridge-2.2.0.vsix
+        ```
+    * **Method 2: Manual compilation (For developers/contributors)**:
+      * Compile the source code:
+        ```bash
+        npm run build
+        ```
+      * Symlink or copy the repository folder to the IDE's extensions folder:
+        * **Windows**: `C:\Users\<username>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.2.0`
+        * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.2.0`
      * Restart Antigravity IDE to load the extension.
 3. **Visual Configuration & Run**:
    * Click the **WeChat Agent** icon in the Antigravity IDE Activity Bar (left panel).
@@ -106,12 +106,14 @@ If your Agent platform (like Claude Code or advanced IDEs) supports the standard
 
 ---
 
-## 🔄 Dynamic Active Workspace Routing
+## 🔄 Active Workspace Routing
 
-When you open multiple projects (workspaces) concurrently in the IDE, they are automatically routed to avoid resource conflict:
-* **Core Mechanism**: The extension maintains a pointer to the active workspace at `~/.wechat-claude-code/active_workspace.txt`.
-* **Focus Awareness**: Switching between IDE windows automatically updates the active workspace path via the `onDidChangeWindowState` listener.
-* **Message Routing**: When the background WeChat daemon receives a new instruction, it checks `active_workspace.txt` first and redirects execution to the active workspace's communication channel, allowing you to control whatever workspace you are currently focused on.
+When you open multiple projects (workspaces) in the IDE, they avoid conflict through a centralized routing system:
+* **Core Mechanism**: The system registers all currently open workspaces in `workspaces.json` and records the path of the active receiver workspace in `active_workspace.txt`.
+* **Focus Awareness**: When you click or switch to an IDE window, the extension automatically updates the active receiver path to `active_workspace.txt`.
+* **Visual Workspace Console**: The WeChat Agent sidebar console lists all active workspaces in real time and highlights the current receiver workspace with a dynamic green "RECEIVING" badge.
+* **Interactive Manual Switch**: You can click directly on any workspace item in the sidebar workspaces list to manually switch and route incoming WeChat messages to that workspace.
+* **Message Routing**: The WeChat daemon reads the active workspace path on message arrival and routes the payload to the corresponding workspace, letting you control whichever project you are currently working on.
 
 ---
 

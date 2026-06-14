@@ -70,10 +70,10 @@ npm run setup
 
 1. **安装插件**：
    * **方法一：通过 VSIX 离线包安装 (强烈推荐，最简单)**：
-     * 前往 GitHub Releases 页面下载最新的 `wechat-antigravity-bridge-2.1.0.vsix` 文件。
+     * 前往 GitHub Releases 页面下载最新的 `wechat-antigravity-bridge-2.2.0.vsix` 文件。
      * 打开 Antigravity IDE，按 `Ctrl + Shift + P` 唤起命令面板，选择 **`Extensions: Install from VSIX...`** 并导入下载好的 vsix 文件；或者在终端中运行：
        ```bash
-       antigravity --install-extension wechat-antigravity-bridge-2.1.0.vsix
+       antigravity --install-extension wechat-antigravity-bridge-2.2.0.vsix
        ```
    * **方法二：本地源码手动安装 (适合开发调试的用户)**：
      * 在根目录编译插件代码：
@@ -81,8 +81,8 @@ npm run setup
        npm run build
        ```
      * 将整个项目文件夹复制或建立软链接到以下路径：
-       * **Windows**: `C:\Users\<您的用户名>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.1.0`
-       * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.1.0`
+       * **Windows**: `C:\Users\<您的用户名>\.antigravity-ide\extensions\bestxby.wechat-antigravity-bridge-2.2.0`
+       * **macOS / Linux**: `~/.antigravity-ide/extensions/bestxby.wechat-antigravity-bridge-2.2.0`
      * 重启 Antigravity IDE，插件即会自动激活。
 3. **可视化配置与运行**：
    * 启动 Antigravity IDE 后，点击左侧活动栏 (Activity Bar) 中的 **WeChat Agent** 微信小图标。
@@ -111,10 +111,12 @@ node /path/to/wechat-with-antigravity/dist/agent-loop/wait-message.js
 
 ## 🔄 动态多工作区路由 (Active Workspace Routing)
 
-当您在 IDE 中同时打开多个项目（工作区）时，它们会通过底层的路由机制避免消息冲突：
-* **核心机制**：系统在 `~/.wechat-claude-code/active_workspace.txt` 中写入当前处于焦点/活动状态的工作区绝对路径。
-* **焦点感知**：当您的鼠标点击或切换到某个 IDE 窗口时，插件会监听 `onDidChangeWindowState` 事件，自动将当前激活的窗口路径更新到 `active_workspace.txt`。
-* **消息路由**：WeChat 守护进程（Daemon）收到新消息后，会优先读取该文件，并自动将消息路由到对应的工作区进行处理（使用对应工作区的本地 `.wechat-agent` 通信管道），真正实现“鼠标切到哪，微信就控制哪”。
+当您在 IDE 中同时打开多个项目（工作区）时，它们会通过底层的路由机制进行消息分发与切换：
+* **核心机制**：系统在 `~/.wechat-claude-code/workspaces.json` 中记录当前所有打开的 IDE 工作区，并在 `active_workspace.txt` 中记录当前被激活的消息接收工作区。
+* **焦点感知**：当您的鼠标点击或切换到某个 IDE 窗口时，插件会自动将当前激活的窗口路径写入到 `active_workspace.txt`。
+* **可视化看板**：WeChat 侧边栏控制台内置了“🖥️ 活跃工作区”看板，实时渲染出所有打开的代码仓，并为当前接收消息的活跃窗口打上绿色的 “接收中 / RECEIVING” 呼吸徽章。
+* **手动点击切换**：除了聚焦自动切换，您还可以直接在侧边栏的列表中点击任意一个工作区，立刻手动将消息接收大脑路由转移到对应的窗口。
+* **消息路由**：微信消息监听器收到新指令后，会优先读取该活跃窗口配置，并自动在其对应的工作区路径中写入任务并唤醒智能体。
 
 ---
 

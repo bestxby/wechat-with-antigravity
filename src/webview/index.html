@@ -72,6 +72,16 @@
                     </div>
                     <button id="btn-daemon-toggle" class="control-btn-mini" data-running="0">开启</button>
                 </div>
+
+                <div class="card-divider"></div>
+
+                <!-- Workspaces List Section -->
+                <div class="workspaces-section">
+                    <h4 class="workspaces-title">🖥️ 活跃工作区</h4>
+                    <div id="workspaces-list" class="workspaces-list">
+                        <!-- Dynamic workspaces will be injected here -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -145,7 +155,7 @@
                     </div>
                     <div class="guide-item-compact">
                         <span class="badge-num lock">🔒</span>
-                        <span class="guide-text"><b>锁冲突？</b> 提示已运行则删 <code>.wechat-agent/.listener.lock</code></span>
+                        <span class="guide-text"><b>锁冲突？</b> 提示已运行则删 <code>~/.wechat-claude-code/listener.lock</code></span>
                     </div>
                 </div>
             </div>

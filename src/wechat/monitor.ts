@@ -3,6 +3,9 @@ import { loadSyncBuf, saveSyncBuf } from './sync-buf.js';
 import { logger } from '../logger.js';
 import { MessageItemType, type WeixinMessage } from './types.js';
 import { downloadImage, downloadFile } from './media.js';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { DATA_DIR } from '../constants.js';
 
 const SESSION_EXPIRED_ERRCODE = -14;
 const SESSION_EXPIRED_PAUSE_MS = 60 * 60 * 1000; // 1 hour
@@ -18,7 +21,30 @@ export interface MonitorCallbacks {
 export function createMonitor(api: WeChatApi, callbacks: MonitorCallbacks) {
   const controller = new AbortController();
   let stopped = false;
-  const recentMsgIds = new Set<number>();
+  const dedupFile = path.join(DATA_DIR, 'processed_msg_ids.json');
+
+  function loadRecentMsgIds(): Set<number> {
+    try {
+      if (fs.existsSync(dedupFile)) {
+        const ids = JSON.parse(fs.readFileSync(dedupFile, 'utf-8'));
+        if (Array.isArray(ids)) {
+          return new Set(ids);
+        }
+      }
+    } catch (e) {}
+    return new Set<number>();
+  }
+
+  function saveRecentMsgIds(ids: Set<number>) {
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(dedupFile, JSON.stringify(Array.from(ids)), 'utf-8');
+    } catch (e) {}
+  }
+
+  const recentMsgIds = loadRecentMsgIds();
   const MAX_MSG_IDS = 1000;
 
   async function run(): Promise<void> {
@@ -68,6 +94,7 @@ export function createMonitor(api: WeChatApi, callbacks: MonitorCallbacks) {
                 }
                 for (const id of toDelete) recentMsgIds.delete(id);
               }
+              saveRecentMsgIds(recentMsgIds);
             }
             // Download media before dispatching
             if (msg.item_list) {
