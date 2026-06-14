@@ -10,7 +10,11 @@ import { extractText, extractFirstImageUrl, extractFirstFileItem, extractFirstVo
 import { logger } from '../logger.js';
 
 async function main() {
-  const lockPath = path.join(process.cwd(), '.listener.lock');
+  const agentCoreDir = path.join(process.cwd(), '.wechat-agent');
+  if (!fs.existsSync(agentCoreDir)) {
+    fs.mkdirSync(agentCoreDir, { recursive: true });
+  }
+  const lockPath = path.join(agentCoreDir, '.listener.lock');
   if (fs.existsSync(lockPath)) {
     const pid = fs.readFileSync(lockPath, 'utf8');
     try {

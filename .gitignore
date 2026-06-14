@@ -6,11 +6,8 @@ dist/
 .claude/
 CLAUDE.md
 
-# Local runtime artifacts
-.typing.pid
-wechat-response.txt
-.listener.lock
-.data/
+# Agent runtime state isolation box
+.wechat-agent/
 
 # Internal agent thought processes & specs
 docs/superpowers/

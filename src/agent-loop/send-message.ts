@@ -24,7 +24,8 @@ async function main() {
   // Stop typing indicator if it is running
   const fs = await import('node:fs');
   const path = await import('node:path');
-  const pidFile = path.join(process.cwd(), '.typing.pid');
+  const agentCoreDir = path.join(process.cwd(), '.wechat-agent');
+  const pidFile = path.join(agentCoreDir, '.typing.pid');
   if (fs.existsSync(pidFile)) {
     const pid = fs.readFileSync(pidFile, 'utf8');
     try {

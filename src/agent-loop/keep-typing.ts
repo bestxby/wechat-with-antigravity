@@ -13,7 +13,11 @@ if (!userId) {
 }
 
 // Write PID so send-message can kill it
-const pidFile = path.join(process.cwd(), '.typing.pid');
+const agentCoreDir = path.join(process.cwd(), '.wechat-agent');
+if (!fs.existsSync(agentCoreDir)) {
+  fs.mkdirSync(agentCoreDir, { recursive: true });
+}
+const pidFile = path.join(agentCoreDir, '.typing.pid');
 fs.writeFileSync(pidFile, process.pid.toString());
 
 const account = loadLatestAccount();
