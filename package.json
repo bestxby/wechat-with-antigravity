@@ -1,7 +1,7 @@
 {
   "name": "wechat-antigravity-bridge",
   "version": "1.0.0",
-  "description": "Chat with Antigravity IDE from WeChat - a bridge connecting personal WeChat to Antigravity Agent",
+  "description": "A powerful bridge connecting personal WeChat to Antigravity Agent, transforming WeChat into a full-duplex root terminal for your IDE.",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -28,16 +28,16 @@
   },
   "keywords": [
     "wechat",
-    "claude-code",
-    "claude",
-    "bridge",
-    "chat",
-    "skill"
+    "antigravity",
+    "ai-agent",
+    "ide-plugin",
+    "automation",
+    "bot"
   ],
-  "author": "Wechat-ggGitHub",
+  "author": "bestxby",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Wechat-ggGitHub/wechat-claude-code.git"
+    "url": "https://github.com/bestxby/wechat-with-antigravity.git"
   }
 }
