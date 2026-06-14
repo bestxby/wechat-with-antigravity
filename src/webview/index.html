@@ -92,29 +92,60 @@
                 </div>
             </div>
 
+            <!-- 便捷指令集 -->
+            <div class="guide-section">
+                <h3 class="panel-heading">⚡ 便捷指令集</h3>
+                <div class="guide-list-compact">
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/screenshot</b>：微信一键实时截取本地 IDE 画面</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/tasks</b>：查看本地运行中的后台任务列表</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/kill &lt;ID&gt;</b>：远程终止指定的卡死任务或进程</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/status</b>：获取本地系统健康状况 (CPU/内存/磁盘)</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/sleep</b>：远程使本地电脑进入睡眠状态</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/lock</b>：远程锁定本地电脑屏幕</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/reset</b>：重置对话上下文，清空 Agent 记忆</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num slash">/</span>
+                        <span class="guide-text"><b>/awake</b>：开启/关闭本地挂机防掉线，防止系统进入睡眠状态</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- 排障手册 -->
             <div class="guide-section">
                 <h3 class="panel-heading">🔧 排障手册</h3>
                 <div class="guide-list-compact">
                     <div class="guide-item-compact">
-                        <span class="badge-num warn">!</span>
-                        <span class="guide-text"><b>开启无反应？</b> 按 <code>Ctrl+Shift+P</code> 运行 <code>Reload Window</code> 重载窗口</span>
-                    </div>
-                    <div class="guide-item-compact">
-                        <span class="badge-num reset">↺</span>
-                        <span class="guide-text"><b>重置记忆</b>：微信发送 <code>/reset</code> 可一键清空上下文</span>
-                    </div>
-                    <div class="guide-item-compact">
-                        <span class="badge-num lock">🔒</span>
-                        <span class="guide-text"><b>锁冲突？</b> 提示已运行则删 <code>.wechat-agent/.listener.lock</code></span>
-                    </div>
-                    <div class="guide-item-compact">
                         <span class="badge-num qr">📷</span>
                         <span class="guide-text"><b>扫码失败？</b> 点“断开绑定”重新刷新生成二维码</span>
                     </div>
                     <div class="guide-item-compact">
-                        <span class="badge-num awake">⚡</span>
-                        <span class="guide-text"><b>挂机防掉线</b>：终端运行 <code>npm run awake</code> 防止系统休眠</span>
+                        <span class="badge-num warn">!</span>
+                        <span class="guide-text"><b>开启无反应？</b> 按 <code>Ctrl+Shift+P</code> 运行 <code>Reload Window</code> 重载窗口</span>
+                    </div>
+                    <div class="guide-item-compact">
+                        <span class="badge-num lock">🔒</span>
+                        <span class="guide-text"><b>锁冲突？</b> 提示已运行则删 <code>.wechat-agent/.listener.lock</code></span>
                     </div>
                 </div>
             </div>

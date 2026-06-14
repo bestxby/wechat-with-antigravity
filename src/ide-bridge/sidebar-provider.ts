@@ -129,6 +129,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           label.innerText = labels[status] || status;
           btn.innerText = (status === 'running') ? '停止' : '开启';
           btn.dataset.running = status === 'running' ? '1' : '0';
+          if (status === 'running') {
+            btn.classList.add('running');
+          } else {
+            btn.classList.remove('running');
+          }
         }
       });
 

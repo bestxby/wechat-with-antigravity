@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ChildProcess, spawn } from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import { logger } from '../logger.js';
 
 export type DaemonStatus = 'stopped' | 'starting' | 'running' | 'error';
@@ -30,7 +31,12 @@ export function getDaemonStatus(): DaemonStatus {
   return 'running';
 }
 
-export function startDaemon(extensionPath: string): void {
+let activeWorkspacePath = '';
+
+export function startDaemon(extensionPath: string, workspacePath?: string): void {
+  if (workspacePath) {
+    activeWorkspacePath = workspacePath;
+  }
   if (daemonProcess && daemonProcess.exitCode === null) {
     log('Daemon is already running.');
     stateCallback?.('running');
@@ -49,7 +55,7 @@ function _spawn(extensionPath: string): void {
   daemonProcess = spawn('node', [scriptPath], {
     cwd: extensionPath,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env },
+    env: { ...process.env, WCC_ACTIVE_WORKSPACE: activeWorkspacePath },
   });
 
   daemonProcess.stdout?.on('data', (data: Buffer) => {
@@ -244,8 +250,24 @@ function wakeUpAgent(payload: any) {
   log(`Resolved executable path: ${exePath}`);
   log(`Resolved CLI helper path: ${cliJsPath}`);
 
+  let workspacePath = activeWorkspacePath || path.join(process.cwd());
+  if (!activeWorkspacePath) {
+    try {
+      const dataDir = process.env.WCC_DATA_DIR || path.join(os.homedir(), '.wechat-claude-code');
+      const activeWsFile = path.join(dataDir, 'active_workspace.txt');
+      if (fs.existsSync(activeWsFile)) {
+        const activePath = fs.readFileSync(activeWsFile, 'utf-8').trim();
+        if (activePath && fs.existsSync(activePath)) {
+          workspacePath = activePath;
+          log(`Routing agent wakeup to active workspace: ${workspacePath}`);
+        }
+      }
+    } catch (err: any) {
+      log(`Failed to read active workspace file: ${err.message}`);
+    }
+  }
+
   try {
-    const workspacePath = path.join(process.cwd());
     const agentDir = path.join(workspacePath, '.wechat-agent');
     if (!fs.existsSync(agentDir)) {
       fs.mkdirSync(agentDir, { recursive: true });
@@ -257,6 +279,7 @@ function wakeUpAgent(payload: any) {
     const child = spawn(exePath, [cliJsPath, 'chat', '-r', '--mode', 'agent', '-a', instructionPath, '请开始微信消息处理：'], {
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: true,
+      cwd: workspacePath,
       env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }
     });
 

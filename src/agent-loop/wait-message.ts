@@ -1,6 +1,7 @@
 import process from 'node:process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { homedir } from 'node:os';
 import { WeChatApi } from '../wechat/api.js';
 import { loadLatestAccount } from '../wechat/accounts.js';
 import { createMonitor } from '../wechat/monitor.js';
@@ -10,7 +11,23 @@ import { extractText, extractFirstImageUrl, extractFirstFileItem, extractFirstVo
 import { logger } from '../logger.js';
 
 async function main() {
-  const agentCoreDir = path.join(process.cwd(), '.wechat-agent');
+  let workspacePath = process.env.WCC_ACTIVE_WORKSPACE || '';
+  if (!workspacePath) {
+    try {
+      const dataDir = process.env.WCC_DATA_DIR || path.join(homedir(), '.wechat-claude-code');
+      const activeWsFile = path.join(dataDir, 'active_workspace.txt');
+      if (fs.existsSync(activeWsFile)) {
+        const activePath = fs.readFileSync(activeWsFile, 'utf-8').trim();
+        if (activePath && fs.existsSync(activePath)) {
+          workspacePath = activePath;
+        }
+      }
+    } catch (e) {}
+  }
+  if (!workspacePath) {
+    workspacePath = process.cwd();
+  }
+  const agentCoreDir = path.join(workspacePath, '.wechat-agent');
   if (!fs.existsSync(agentCoreDir)) {
     fs.mkdirSync(agentCoreDir, { recursive: true });
   }
@@ -26,6 +43,19 @@ async function main() {
     }
   }
   fs.writeFileSync(lockPath, process.pid.toString());
+
+  // Startup cleanup of stale locks if agent is not running
+  const typingPidPath = path.join(agentCoreDir, '.typing.pid');
+  if (!fs.existsSync(typingPidPath)) {
+    const staleApprovalLock = path.join(agentCoreDir, '.approval.lock');
+    if (fs.existsSync(staleApprovalLock)) {
+      try { fs.unlinkSync(staleApprovalLock); } catch (e) {}
+    }
+    const staleApprovalResult = path.join(agentCoreDir, 'approval-result.txt');
+    if (fs.existsSync(staleApprovalResult)) {
+      try { fs.unlinkSync(staleApprovalResult); } catch (e) {}
+    }
+  }
 
   const clearLock = () => {
     if (fs.existsSync(lockPath)) {
@@ -71,6 +101,31 @@ async function main() {
       // If it's empty, ignore it
       if (!userText && !imageItem && !fileItem && !voiceItem) return;
 
+      // Intercept if waiting for approval
+      const approvalLockPath = path.join(agentCoreDir, '.approval.lock');
+      if (fs.existsSync(approvalLockPath) && userText) {
+        const replyText = userText.trim().toLowerCase();
+        let approved = 'no';
+        if (replyText === 'y' || replyText === 'yes' || replyText === '确认' || replyText === '同意' || replyText === 'ok' || replyText === '行' || replyText === '好' || replyText === '允许' || replyText === 'approve') {
+          approved = 'yes';
+        }
+        fs.writeFileSync(path.join(agentCoreDir, 'approval-result.txt'), approved);
+        
+        try {
+          const sender = createSender(api, account.accountId);
+          let approvalAckText = `✅ 审批已收到（${approved === 'yes' ? '已同意' : '已拒绝'}），正在继续处理...`;
+          if (voiceItem?.voice_item?.text) {
+            approvalAckText = `🔊 语音已识别：“${voiceItem.voice_item.text}”\n${approvalAckText}`;
+          }
+          await sender.sendText(msg.from_user_id!, msg.context_token ?? '', approvalAckText);
+        } catch (err) {
+          logger.warn('Failed to send approval ACK', { error: String(err) });
+        }
+        
+        monitor.stop();
+        process.exit(2);
+      }
+
       const payload = {
         fromUserId: msg.from_user_id,
         contextToken: msg.context_token ?? '',
@@ -89,7 +144,6 @@ async function main() {
       
       // Spawn detached typing indicator
       const { spawn } = await import('node:child_process');
-      const path = await import('node:path');
       const scriptPath = path.join(process.cwd(), 'dist', 'agent-loop', 'keep-typing.js');
       const child = spawn(process.execPath, [scriptPath, msg.from_user_id!, msg.context_token ?? ''], {
         detached: true,
@@ -100,7 +154,11 @@ async function main() {
       // Send an immediate ACK back to the user
       try {
         const sender = createSender(api, account.accountId);
-        await sender.sendText(msg.from_user_id!, msg.context_token ?? '', '✅ 任务已收到，正在处理中...');
+        let ackText = '✅ 任务已收到，正在处理中...';
+        if (voiceItem?.voice_item?.text) {
+          ackText = `🔊 语音已识别：“${voiceItem.voice_item.text}”\n${ackText}`;
+        }
+        await sender.sendText(msg.from_user_id!, msg.context_token ?? '', ackText);
       } catch (err) {
         logger.warn('Failed to send ACK', { error: String(err) });
       }

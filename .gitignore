@@ -11,3 +11,6 @@ CLAUDE.md
 
 # Internal agent thought processes & specs
 docs/superpowers/
+
+# Pre-compiled extension packages
+*.vsix

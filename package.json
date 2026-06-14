@@ -1,14 +1,15 @@
 {
   "name": "wechat-antigravity-bridge",
+  "displayName": "WeChat with Antigravity",
   "publisher": "bestxby",
-  "version": "2.0.0",
-  "description": "A powerful bridge connecting personal WeChat to Antigravity Agent, transforming WeChat into a full-duplex root terminal for your IDE.",
+  "version": "2.1.0",
+  "description": "💬 将个人微信连接至“反重力智能体”的强大桥梁，将微信化身为 IDE 的全双工根终端！🚀 A powerful bridge connecting personal WeChat to Antigravity Agent, transforming WeChat into a full-duplex root terminal for your IDE.",
+  "icon": "resources/logo.png",
   "engines": {
     "vscode": "^1.80.0"
   },
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onView:wechat-antigravity.sidebar",
     "onStartupFinished"
   ],
   "contributes": {

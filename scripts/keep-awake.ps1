@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 public class Sleeper {
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern uint SetThreadExecutionState(uint esFlags);
+    public static extern int SetThreadExecutionState(int esFlags);
 }
 "@
 
@@ -18,7 +18,7 @@ Add-Type -TypeDefinition $code
 # Define flags:
 # ES_CONTINUOUS (0x80000000) - Informs the system that the state being set should remain in effect until the next call that uses ES_CONTINUOUS and one of the other state flags is cleared.
 # ES_SYSTEM_REQUIRED (0x00000001) - Forces the system to be in the working state by resetting the system idle timer.
-$ES_CONTINUOUS = 0x80000000
+$ES_CONTINUOUS = [int]0x80000000
 $ES_SYSTEM_REQUIRED = 0x00000001
 
 # Apply the flags

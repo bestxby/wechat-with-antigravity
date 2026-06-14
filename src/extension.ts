@@ -4,8 +4,22 @@ import * as fs from 'node:fs';
 import { SidebarProvider } from './ide-bridge/sidebar-provider.js';
 import { startDaemon, stopDaemon } from './ide-bridge/daemon.js';
 import { loadLatestAccount } from './wechat/accounts.js';
+import { DATA_DIR } from './constants.js';
 
 let ideLockPath: string | null = null;
+
+function updateActiveWorkspace(workspacePath: string) {
+    try {
+        if (!fs.existsSync(DATA_DIR)) {
+            fs.mkdirSync(DATA_DIR, { recursive: true });
+        }
+        const activeWsFile = path.join(DATA_DIR, 'active_workspace.txt');
+        fs.writeFileSync(activeWsFile, workspacePath, 'utf-8');
+        console.log(`[WeChat Extension] Updated active workspace to: ${workspacePath}`);
+    } catch (err: any) {
+        console.error(`[WeChat Extension] Failed to update active workspace: ${err.message}`);
+    }
+}
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('WeChat Antigravity Extension is now active!');
@@ -21,12 +35,26 @@ export function activate(context: vscode.ExtensionContext) {
         ideLockPath = path.join(agentDir, '.ide.lock');
         fs.writeFileSync(ideLockPath, process.pid.toString(), 'utf-8');
         console.log(`Created IDE lock at ${ideLockPath} with PID ${process.pid}`);
+        updateActiveWorkspace(workspacePath);
     }
+
+    // Update active workspace when window gains focus
+    context.subscriptions.push(
+        vscode.window.onDidChangeWindowState((e) => {
+            if (e.focused) {
+                const folders = vscode.workspace.workspaceFolders;
+                if (folders && folders.length > 0) {
+                    updateActiveWorkspace(folders[0].uri.fsPath);
+                }
+            }
+        })
+    );
 
     // Auto-start daemon on startup if user is logged in
     const account = loadLatestAccount();
     if (account) {
-        startDaemon(context.extensionUri.fsPath);
+        const wsPath = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : '';
+        startDaemon(context.extensionUri.fsPath, wsPath);
     }
 
     const sidebarProvider = new SidebarProvider(context.extensionUri);
