@@ -148,7 +148,8 @@ async function main() {
       const scriptPath = path.join(process.cwd(), 'dist', 'agent-loop', 'keep-typing.js');
       const child = spawn(process.execPath, [scriptPath, msg.from_user_id!, msg.context_token ?? ''], {
         detached: true,
-        stdio: 'ignore'
+        stdio: 'ignore',
+        cwd: workspacePath
       });
       child.unref();
 

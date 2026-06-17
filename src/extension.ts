@@ -98,10 +98,26 @@ export function activate(context: vscode.ExtensionContext) {
         updateActiveWorkspace(workspacePath);
     }
 
-    // Update active workspace when window gains focus
+    // Update active workspace when window gains focus or active editor/terminal changes
     context.subscriptions.push(
         vscode.window.onDidChangeWindowState((e) => {
             if (e.focused) {
+                const folders = vscode.workspace.workspaceFolders;
+                if (folders && folders.length > 0) {
+                    updateActiveWorkspace(folders[0].uri.fsPath);
+                }
+            }
+        }),
+        vscode.window.onDidChangeActiveTextEditor((editor) => {
+            if (editor) {
+                const folders = vscode.workspace.workspaceFolders;
+                if (folders && folders.length > 0) {
+                    updateActiveWorkspace(folders[0].uri.fsPath);
+                }
+            }
+        }),
+        vscode.window.onDidChangeActiveTerminal((terminal) => {
+            if (terminal) {
                 const folders = vscode.workspace.workspaceFolders;
                 if (folders && folders.length > 0) {
                     updateActiveWorkspace(folders[0].uri.fsPath);
@@ -165,17 +181,29 @@ export function activate(context: vscode.ExtensionContext) {
                         cleanPath = decodeURIComponent(cleanPath);
                     } catch (e) {}
                     traverse(cleanPath);
-                } else if (typeof arg.fsPath === 'string') {
-                    traverse(arg.fsPath);
-                } else if (typeof arg.prompt === 'string') {
-                    traverse(arg.prompt);
-                } else if (typeof arg.message === 'string') {
-                    traverse(arg.message);
-                } else if (typeof arg.query === 'string') {
-                    traverse(arg.query);
                 } else {
-                    for (const key of Object.keys(arg)) {
-                        traverse(arg[key]);
+                    // Extract known prompt fields and attachments
+                    if (typeof arg.query === 'string') {
+                        traverse(arg.query);
+                    }
+                    if (typeof arg.prompt === 'string') {
+                        traverse(arg.prompt);
+                    }
+                    if (typeof arg.message === 'string') {
+                        traverse(arg.message);
+                    }
+                    if (arg.attachFiles) {
+                        traverse(arg.attachFiles);
+                    }
+                    
+                    // Fallback for other plain objects
+                    if (typeof arg.query !== 'string' && 
+                        typeof arg.prompt !== 'string' && 
+                        typeof arg.message !== 'string' && 
+                        !arg.attachFiles) {
+                        for (const key of Object.keys(arg)) {
+                            traverse(arg[key]);
+                        }
                     }
                 }
             }
